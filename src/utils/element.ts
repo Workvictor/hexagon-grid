@@ -82,6 +82,7 @@ export const body = makeElement('body');
 export const style = makeElement('style');
 export const slot = makeElement('slot');
 export const canvas = makeElement('canvas');
+export const canvasCTX = () => canvas().getContext('2d');
 
 export const TOKEN_HIDDEN = 'hidden';
 const TOKEN_ACTIVE = 'active';
