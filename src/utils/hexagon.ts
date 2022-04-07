@@ -2,11 +2,22 @@ export const createHexagonConstructor = (radius: number) => {
   const sideCount = 6;
   const angle = (2 * Math.PI) / sideCount;
   const angleOffset = Math.PI / 2;
-  const height = 2 * radius;
-  const width = radius * Math.sqrt(3);
-  const w_1_2 = width / 2;
-  const h_1_4 = height / 4;
-  const h_3_4 = h_1_4 * 3;
+
+  let height = 0;
+  let width = 0;
+  let w_1_2 = 0;
+  let h_1_4 = 0;
+  let h_3_4 = 0;
+
+  const update = () => {
+    height = 2 * radius;
+    width = Math.ceil(radius * Math.sqrt(3));
+    w_1_2 = width / 2;
+    h_1_4 = height / 4;
+    h_3_4 = h_1_4 * 3;
+  };
+	
+  update();
 
   return {
     $radius: radius,
@@ -18,6 +29,10 @@ export const createHexagonConstructor = (radius: number) => {
     $w_1_2: w_1_2,
     $h_1_4: h_1_4,
     $h_3_4: h_3_4,
+    $setRadius: (nextRadius: number) => {
+      radius = nextRadius;
+      update();
+    },
     $getGridSize: (cols: number, rows: number, lineWidth: number) => {
       return {
         w: cols * width + w_1_2 + lineWidth * 2,

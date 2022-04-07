@@ -6,90 +6,81 @@ import { useMemo } from 'src/utils/useMemo';
 import { useThrottle } from 'src/utils/useThrottle';
 
 export class GuiCanvas extends GuiElement {
-  ctx: CanvasRenderingContext2D;
-  $hexImageCTX: CanvasRenderingContext2D;
-  $hexHoverImageCTX: CanvasRenderingContext2D;
-  $hexCon: ReturnType<typeof createHexagonConstructor>;
-
   constructor() {
     super();
     this.$addCss(css`
       :host,
-      canvas {
+      ::slotted(canvas) {
         position: absolute;
-        top: 0;
-        left: 0;
-      }
-      :host {
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
       }
     `);
 
-    this.ctx = canvasCTX()!;
-    this.append(this.ctx.canvas);
+    let hexTile = canvasCTX()!;
+    let hexHover = canvasCTX()!;
 
-    this.$hexCon = createHexagonConstructor(GAME_DATA.HexRadius.Get());
-    this.$hexImageCTX = canvasCTX()!;
-    this.$hexHoverImageCTX = canvasCTX()!;
+    const lineWidth = 1;
+    const hexCon = createHexagonConstructor(GAME_DATA.HexRadius.Get());
+    const gridLayer = canvasCTX()!;
+    const hoverLayer = canvasCTX()!;
+    this.append(gridLayer.canvas, hoverLayer.canvas);
+
+    const rebuildGrid = (sizeX: number, sizeY: number) => {
+      const { h, w } = hexCon.$getGridSize(sizeX, sizeY, gridLayer.lineWidth);
+      gridLayer.canvas.width = w;
+      gridLayer.canvas.height = h;
+      gridLayer.clearRect(0, 0, gridLayer.canvas.width, gridLayer.canvas.height);
+      hexCon.$drawGrid(sizeX, sizeY, (x, y) => {
+        gridLayer.drawImage(hexTile.canvas, x, y);
+      });
+
+      hoverLayer.canvas.width = w;
+      hoverLayer.canvas.height = h;
+      hoverLayer.clearRect(0, 0, hoverLayer.canvas.width, hoverLayer.canvas.height);
+    };
 
     GAME_DATA.HexRadius.Subscribe(hexRadius => {
-      this.$hexCon = createHexagonConstructor(hexRadius);
+      hexCon.$setRadius(hexRadius);
 
-      this.$hexImageCTX = canvasCTX()!;
-      this.$hexImageCTX.lineWidth = 1;
-      this.$hexCon.$drawHexagonPath(this.$hexImageCTX);
-      this.$hexImageCTX.stroke();
+      hexTile.canvas.width = hexHover.canvas.width = hexCon.$width + lineWidth;
+      hexTile.canvas.height = hexHover.canvas.height = hexCon.$height + lineWidth;
+      hexTile.lineWidth = hexHover.lineWidth = lineWidth;
+      hexCon.$drawHexagonPath(hexTile);
+      hexCon.$drawHexagonPath(hexHover);
+      hexTile.stroke();
+      hexHover.fillStyle = 'hsla(82, 93%, 23%, 0.25)';
+      hexHover.fill();
 
-      this.$hexHoverImageCTX = canvasCTX()!;
-      this.$hexHoverImageCTX.lineWidth = 1;
-      this.$hexCon.$drawHexagonPath(this.$hexHoverImageCTX);
-      this.$hexHoverImageCTX.fillStyle = 'hsla(82, 93%, 23%, 0.25)';
-      this.$hexHoverImageCTX.fill();
       GAME_DATA.GridSize.Broadcast();
     });
 
     GAME_DATA.GridSize.Subscribe(([sizeX, sizeY]) => {
-      const { h, w } = this.$hexCon.$getGridSize(sizeX, sizeY, this.ctx.lineWidth);
-      this.Resize(w, h);
+      rebuildGrid(sizeX, sizeY);
     });
 
     const onChangeHoverPosition = useMemo<null | number>(
       (x, y) => {
         if (x !== null && y !== null) {
-          this.Redraw();
-          this.ctx.drawImage(this.$hexHoverImageCTX.canvas, x, y);
+          hoverLayer.clearRect(0, 0, hoverLayer.canvas.width, hoverLayer.canvas.height);
+          hoverLayer.drawImage(hexHover.canvas, x, y);
         }
       },
       [null, null]
     );
     const processMousePosition = useThrottle(40, (clientX: number, clientY: number) => {
-      const [, , x, y] = this.$hexCon.$getGridColRow(clientX, clientY);
+      const [, , x, y] = hexCon.$getGridColRow(clientX, clientY);
       onChangeHoverPosition(x, y);
     });
 
     window.addEventListener('mousemove', event => {
-      const rect = this.ctx.canvas.getBoundingClientRect();
+      const rect = hoverLayer.canvas.getBoundingClientRect();
       const posX = event.clientX - rect.x;
       const posY = event.clientY - rect.y;
       processMousePosition(posX, posY);
     });
   }
-
-  Resize = (width: number, height: number) => {
-    this.ctx.canvas.width = width;
-    this.ctx.canvas.height = height;
-    this.Redraw();
-  };
-
-  Redraw = () => {
-    this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
-    const [sizeX, sizeY] = GAME_DATA.GridSize.Get();
-    this.$hexCon.$drawGrid(sizeX, sizeY, (x, y) => {
-      this.ctx.drawImage(this.$hexImageCTX.canvas, x, y);
-    });
-  };
 }
 
 defineElement(GuiCanvas);

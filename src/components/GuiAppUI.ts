@@ -1,6 +1,6 @@
 import { GAME_DATA } from 'src/controller/gameData';
 import { css } from 'src/utils/css';
-import { defineElement, div, GuiElement, input, inputRange } from 'src/utils/element';
+import { defineElement, div, GuiElement, inputRange, label, span } from 'src/utils/element';
 import { useThrottle } from 'src/utils/useThrottle';
 import { GuiButton } from './GuiButton';
 import { GuiText } from './GuiText';
@@ -13,6 +13,7 @@ export class GuiAppUI extends GuiElement {
         position: fixed;
         padding: 8px;
         display: none;
+        color: var(--clr-cmn-light);
       }
     `);
 
@@ -24,19 +25,34 @@ export class GuiAppUI extends GuiElement {
 
     const sizeXInput = inputRange();
     const sizeYInput = inputRange();
-    const sizeRangeInput = inputRange();
-		sizeRangeInput.min = '8';
-		sizeRangeInput.max = '64';
-		sizeRangeInput.step = '8';
-    const applyBtn = new GuiButton(GuiText(i => i['txt-3']));
+    const sizeRInput = inputRange();
+    sizeRInput.min = '8';
+    sizeXInput.min = '4';
+    sizeYInput.min = '4';
+    sizeRInput.max = '64';
+    sizeXInput.max = '96';
+    sizeYInput.max = '96';
+    sizeRInput.step = '8';
+    sizeXInput.step = '2';
+    sizeYInput.step = '2';
+    const sizeRText = span(null, [sizeRInput.value]);
+    const sizeXText = span(null, [sizeXInput.value]);
+    const sizeYText = span(null, [sizeYInput.value]);
+    const sizeRLabel = label(null, [GuiText(i => i['txt-4']), ': ', sizeRText, ' ', sizeRInput]);
+    const sizeXLabel = label(null, [GuiText(i => i['txt-5']), ': ', sizeXText, ' ', sizeXInput]);
+    const sizeYLabel = label(null, [GuiText(i => i['txt-6']), ': ', sizeYText, ' ', sizeYInput]);
+    // const applyBtn = new GuiButton(GuiText(i => i['txt-3']));
 
-    this.append(applyBtn, div(null, [div(null, [sizeRangeInput]), div(null, [sizeXInput]), div(null, [sizeYInput])]));
+    this.append(div(null, [div(null, [sizeRLabel]), div(null, [sizeXLabel]), div(null, [sizeYLabel])]));
 
     const processSizeChange = useThrottle(150, () => {
       GAME_DATA.GridSize.Set([parseInt(sizeXInput.value), parseInt(sizeYInput.value)]);
+      sizeXText.innerText = sizeXInput.value.padStart(2, '0');
+      sizeYText.innerText = sizeYInput.value.padStart(2, '0');
     });
     const processRangeChange = useThrottle(150, () => {
-      GAME_DATA.HexRadius.Set(parseInt(sizeRangeInput.value));
+      GAME_DATA.HexRadius.Set(parseInt(sizeRInput.value));
+			sizeRText.innerText = sizeRInput.value.padStart(2, '0');
     });
 
     sizeXInput.oninput = () => {
@@ -45,7 +61,7 @@ export class GuiAppUI extends GuiElement {
     sizeYInput.oninput = () => {
       processSizeChange();
     };
-    sizeRangeInput.oninput = () => {
+    sizeRInput.oninput = () => {
       processRangeChange();
     };
 
@@ -57,11 +73,15 @@ export class GuiAppUI extends GuiElement {
       if (sizeXInput.value !== String(sizeX) || sizeYInput.value !== String(sizeY)) {
         sizeXInput.value = String(sizeX);
         sizeYInput.value = String(sizeY);
+				sizeXText.innerText = sizeXInput.value.padStart(2, '0');
+				sizeYText.innerText = sizeYInput.value.padStart(2, '0');
       }
     });
     GAME_DATA.HexRadius.Subscribe(HexRadius => {
-      if (sizeRangeInput.value !== String(HexRadius)) {
-        sizeRangeInput.value = String(HexRadius);
+      if (sizeRInput.value !== String(HexRadius)) {
+        sizeRInput.value = String(HexRadius);
+        sizeRText.innerText = sizeRInput.value;
+				sizeRText.innerText = sizeRInput.value.padStart(2, '0');
       }
     });
   }
