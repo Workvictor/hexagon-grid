@@ -16,32 +16,33 @@ export const createHexagonConstructor = (radius: number) => {
     h_1_4 = height / 4;
     h_3_4 = h_1_4 * 3;
   };
-	
+
   update();
 
   return {
-    $radius: radius,
-    $sideCount: sideCount,
-    $angle: angle,
-    $angleOffset: angleOffset,
-    $height: height,
-    $width: width,
-    $w_1_2: w_1_2,
-    $h_1_4: h_1_4,
-    $h_3_4: h_3_4,
+    get $height() {
+      return height;
+    },
+    get $width() {
+      return width;
+    },
     $setRadius: (nextRadius: number) => {
       radius = nextRadius;
       update();
     },
-    $getGridSize: (cols: number, rows: number, lineWidth: number) => {
+    $getGridSize: (cols: number, rows: number) => {
+      const mx = cols * width;
+      const my = rows * h_3_4;
       return {
-        w: cols * width + w_1_2 + lineWidth * 2,
-        h: rows * h_3_4 + h_1_4 + lineWidth * 2,
+        w: mx + w_1_2,
+        h: my + h_1_4,
+        mx: mx,
+        my: my,
       };
     },
     $getOffsetX: (row: number) => (row % 2) * w_1_2,
-    $drawHexagonPath: (ctx: CanvasRenderingContext2D) => {
-      const [x, y] = [Math.floor(width / 2) + ctx.lineWidth, Math.floor(height / 2)];
+    $drawHexagonPath: (ctx: CanvasRenderingContext2D, offset = 0) => {
+      const [x, y] = [Math.floor(width / 2) + offset, Math.floor(height / 2)];
       ctx.beginPath();
       for (let i = 0; i < sideCount; i++) {
         const nextAngle = angle * i + angleOffset;
