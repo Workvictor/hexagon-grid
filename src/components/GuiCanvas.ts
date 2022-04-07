@@ -49,12 +49,14 @@ export class GuiCanvas extends GuiElement {
 
     GAME_DATA.GuiCanvasSize.Set([window.innerWidth, window.innerHeight]);
 
-    const onChangeHoverPosition = useMemo(
+    const onChangeHoverPosition = useMemo<null | number>(
       (x, y) => {
-        this.Redraw();
-        this.ctx.drawImage(this.$hexHoverImageCTX.canvas, x, y);
+        if (x !== null && y !== null) {
+          this.Redraw();
+          this.ctx.drawImage(this.$hexHoverImageCTX.canvas, x, y);
+        }
       },
-      [0, 0]
+      [null, null]
     );
     const processMousePosition = useThrottle(40, (clientX: number, clientY: number) => {
       const [, , x, y] = this.$hexCon.$getGridColRow(clientX, clientY);
