@@ -31,23 +31,29 @@ export class GuiCanvas extends GuiElement {
     this.append(this.ctx.canvas);
 
     this.$hexCon = createHexagonConstructor(GAME_DATA.HexRadius.Get());
-
     this.$hexImageCTX = canvasCTX()!;
-    this.$hexImageCTX.lineWidth = 1;
-    this.$hexCon.$drawHexagonPath(this.$hexImageCTX);
-    this.$hexImageCTX.stroke();
-
     this.$hexHoverImageCTX = canvasCTX()!;
-    this.$hexHoverImageCTX.lineWidth = 1;
-    this.$hexCon.$drawHexagonPath(this.$hexHoverImageCTX);
-    this.$hexHoverImageCTX.fillStyle = 'hsla(82, 93%, 23%, 0.25)';
-    this.$hexHoverImageCTX.fill();
 
-    GAME_DATA.GuiCanvasSize.Subscribe(([width, height]) => {
-      this.Resize(width, height);
+    GAME_DATA.HexRadius.Subscribe(hexRadius => {
+      this.$hexCon = createHexagonConstructor(hexRadius);
+
+      this.$hexImageCTX = canvasCTX()!;
+      this.$hexImageCTX.lineWidth = 1;
+      this.$hexCon.$drawHexagonPath(this.$hexImageCTX);
+      this.$hexImageCTX.stroke();
+
+      this.$hexHoverImageCTX = canvasCTX()!;
+      this.$hexHoverImageCTX.lineWidth = 1;
+      this.$hexCon.$drawHexagonPath(this.$hexHoverImageCTX);
+      this.$hexHoverImageCTX.fillStyle = 'hsla(82, 93%, 23%, 0.25)';
+      this.$hexHoverImageCTX.fill();
+      GAME_DATA.GridSize.Broadcast();
     });
 
-    GAME_DATA.GuiCanvasSize.Set([window.innerWidth, window.innerHeight]);
+    GAME_DATA.GridSize.Subscribe(([sizeX, sizeY]) => {
+      const { h, w } = this.$hexCon.$getGridSize(sizeX, sizeY, this.ctx.lineWidth);
+      this.Resize(w, h);
+    });
 
     const onChangeHoverPosition = useMemo<null | number>(
       (x, y) => {
@@ -64,7 +70,10 @@ export class GuiCanvas extends GuiElement {
     });
 
     window.addEventListener('mousemove', event => {
-      processMousePosition(event.clientX, event.clientY);
+      const rect = this.ctx.canvas.getBoundingClientRect();
+      const posX = event.clientX - rect.x;
+      const posY = event.clientY - rect.y;
+      processMousePosition(posX, posY);
     });
   }
 

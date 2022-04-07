@@ -1,4 +1,5 @@
 import { GuiApp } from './components/GuiApp';
+import { GAME_DATA } from './controller/gameData';
 import { css, globalStyle } from './utils/css';
 
 globalStyle(css`
@@ -90,15 +91,19 @@ globalStyle(css`
     --clr-carve-bg: hsla(0, 0%, 2%, 0.4);
   }
 
-	html {
-		cursor: default;
-		font-family: Arial;
-		user-select: none;
-	}
+  html {
+    cursor: default;
+    font-family: Arial;
+    user-select: none;
+  }
 
-	body {
-		background-color: var(--clr-gr8);
-	}
+  body {
+    background-color: var(--clr-gr8);
+  }
 `);
 
-document.body.appendChild(new GuiApp());
+const app = new GuiApp();
+GAME_DATA.GridSize.Broadcast();
+GAME_DATA.HexRadius.Broadcast();
+
+document.body.appendChild(app);

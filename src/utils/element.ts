@@ -69,6 +69,11 @@ export const button = makeElement('button');
 export const span = makeElement('span');
 export const label = makeElement('label');
 export const input = makeElement('input');
+export const inputRange = () => {
+  const el = input();
+  el.type = 'range';
+  return el;
+};
 export const output = makeElement('output');
 export const template = makeElement('template');
 export const icon_button = makeElement('button', i => [i.IconBtn]);

@@ -11,7 +11,6 @@ export const GAME_DATA = {
   SystemFullscreen: false,
 
   UiIsVisible: new Observer(true),
-  GuiCanvasSize: new Observer([1280, 720]),
   HexRadius: new Observer(32),
   GridSize: new Observer([10, 10]),
 };

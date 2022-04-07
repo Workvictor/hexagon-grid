@@ -18,6 +18,12 @@ export const createHexagonConstructor = (radius: number) => {
     $w_1_2: w_1_2,
     $h_1_4: h_1_4,
     $h_3_4: h_3_4,
+    $getGridSize: (cols: number, rows: number, lineWidth: number) => {
+      return {
+        w: cols * width + w_1_2 + lineWidth * 2,
+        h: rows * h_3_4 + h_1_4 + lineWidth * 2,
+      };
+    },
     $getOffsetX: (row: number) => (row % 2) * w_1_2,
     $drawHexagonPath: (ctx: CanvasRenderingContext2D) => {
       const [x, y] = [Math.floor(width / 2) + ctx.lineWidth, Math.floor(height / 2)];
